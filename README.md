@@ -53,12 +53,14 @@ Expected Output:
 
 ## The solution
 
-This solution requires Ruby 2.7 or higher; no dependencies other than the standard library and bundled gems. To install Ruby:
+This solution uses Ruby 2.7 or higher. No additional libraries required.
 
-- On Ubuntu run: `sudo apt install ruby-full`
-- On Fedora run: `sudo dnf install ruby`
-- On macOS install [Homebrew](https://brew.sh/) then run: `brew install ruby`
-- On Windows 10 install [Chocolatey](https://chocolatey.org/) then run: `choco install ruby`
+To install Ruby:
+
+- On Ubuntu Linux run: `sudo apt install ruby-full`
+- On Fedora Linux run: `sudo dnf install ruby`
+- On macOS install [Homebrew](https://brew.sh/), then run: `brew install ruby`
+- On Windows 10 install [Chocolatey](https://chocolatey.org/), then run: `choco install ruby`
 
 To execute the solution, run:
 
@@ -70,18 +72,18 @@ To execute unit tests, run:
 
 ### Design and assumptions
 
-I created a `MarsRover` class which is an abstraction of the rover. The constructor initializes an instance with three basic properties `x`, `y` and `heading`, containing the initial coordinates and the heading. The constructor also takes `rightmost` and `uppermost` properties, which tell the upper-right coordinates of the Martian plateau. For example, a pair `3,6` for these properties would indicate a rectangular plateau of 4x7 in size. The reason I'm providing the grid size is to make the rover ‘aware’ of the borders — it will ignore movement instructions to go beyond a border.
+I created a `MarsRover` class which is an abstraction of the rover. The constructor initializes an instance with three basic properties `x`, `y` and `heading`. These contain the initial coordinates and the initial heading. The constructor also takes `rightmost` and `uppermost` parameters, which tell the upper-right coordinates of the Martian plateau. For example, a pair `3,6` for these properties would tell the plateau is 4x7 in size. The grid size data allows the rover to be ‘aware’ of the borders.
 
-A rover instance has methods `left` and `right` to spin the rover in place, as well as a `move` method to move forward one grid point. Notice `move` has an optional `others` parameter: this is an *array of `MarsRover` objects*, containing references to *all the other rovers roaming on the plateau*. This data is necessary to implement (optional) collision detection — i.e., a rover won’t move to a position occupied by another rover.
+A rover instance has `left` and `right` methods to spin the rover in place. The `move` method moves the rover forward one grid point. `move` has an optional `others` parameter: this is an array of `MarsRover` objects, referencing all the other rovers roaming on the plateau. This is necessary to implement (optional) collision detection — i.e., a rover won’t move to a position occupied by another rover.
 
-I designed `MarsRover` around the assumption the rover will try to preserve its own integrity, and therefore will try to avoid falling off a cliff (go beyond a border) or crash head-on onto another rover (move to an already occupied position). The methods that implement these checks are `inside?` and `crash?` respectively.
+I assumed a `MarsRover` will try to preserve its integrity, i.e., it should avoid falling off a cliff or crash head-on onto another rover. The methods that implement these checks are `inside?` and `crash?` respectively.
 
-I also assumed all rovers have successfully landed on the plateau, and therefore no rover crash-landed onto another one. This is why the `MarsRover` constructor doesn’t check whether the initial coordinates are already occupied by another rover.
+I also assumed all rovers have landed on the plateau, and thus no rover crash-landed onto another one. This is why the `MarsRover` constructor doesn’t check if the initial coordinates are already occupied by another rover.
 
 The `houston` method is an abstraction to communicate error conditions uplink to Earth.
 
-The input text parser was implemented in the main section. It has some defensive features to account for common errors. The grid and coordinate initialization text lines require integers and  valid case-insensitive heading directives, otherwise an error is signaled to Houston and processing stops (i.e., a fatal error). The movement lines simply ignore any non-valid directive and continue without signaling errors.
+The input text parser was implemented in the main section. It has some defensive features to account for common errors. The grid and coordinate text lines require integers and valid, case-insensitive heading directives. Otherwise an error is signaled to Houston and processing stops (i.e., a fatal error). The move directive lines simply ignore any invalid input, without signaling errors.
 
-Invalid initialization directives are signaled as fatal errors because I assumed these are known values, predefined by Mission Control. They’re critical for a correct operation, without which the rover cannot safely operate. Movement directives, however, are probably sent as a continuously changing string downlink from Earth, and some basic error correction capabilities are desirable.
+Invalid initialization directives signal fatal errors because I assumed these are critical values.  Move directives, on the other hand, are probably sent as a continuous string downlink from Earth and some basic error correction capabilities are desirable.
 
 Unit tests are implemented in `test.rb`. These cover all common operations, as well as a couple of boundary conditions.
